@@ -26,6 +26,5 @@
       catch (AccException e) {
           response.getWriter().println("Поля username/passwort пустые");}
     %>
-
 </body>
 </html>

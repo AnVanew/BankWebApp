@@ -34,7 +34,7 @@ public class DepManager implements DepositManager {
     /**
      * Поле содержит в себе файл, в котором хранятся данные по депозитам клиентов.
      */
-    private File file = new File("Deposits.csv");
+    private File file = new File("C:\\Users\\naic infa\\Desktop\\prog\\Java\\BankWebApp\\Deposits.csv");
 
     /**
      * Поле содержит в себе заголовки, по которым записаны поля в файле CSV.
