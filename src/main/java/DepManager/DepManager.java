@@ -2,11 +2,13 @@ package DepManager;
 
 import java.io.File;
 import java.io.FileReader;
+import java.sql.SQLException;
 import java.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.io.IOException;
 
+import DBworkee.DBworker;
 import org.supercsv.io.CsvBeanReader;
 import org.supercsv.io.ICsvBeanReader;
 import org.supercsv.prefs.CsvPreference;
@@ -31,15 +33,7 @@ import ManageExeptions.NoTokenExeption;
 
 public class DepManager implements DepositManager {
 
-    /**
-     * Поле содержит в себе файл, в котором хранятся данные по депозитам клиентов.
-     */
-    private File file = new File("C:\\Users\\naic infa\\Desktop\\prog\\Java\\BankWebApp\\Deposits.csv");
-
-    /**
-     * Поле содержит в себе заголовки, по которым записаны поля в файле CSV.
-     */
-    private String[] headerDeposit = new String[]{"Passport", "FirstName", "LastName", "Ammount", "Percent", "PretermPercent", "TermDays", "StartDate", "WithPercentCapitalization"};
+    DBworker dBworker = new DBworker();
 
     /**
      * Метод добавляет в систему информацию о новом вкладе.
@@ -56,8 +50,8 @@ public class DepManager implements DepositManager {
         }
         Deposit deposit = new Deposit(client, ammount, percent, pretermPercent, termDays, startDate, withPercentCapitalization);
         try {
-            CSVWorker.PrintInCVS(file, deposit, headerDeposit);
-        } catch (CSVException e) {
+            dBworker.addDepositDAO(deposit);
+        } catch (SQLException e) {
             System.out.println("Ошибка создания депозита. Повторите попытку. ");
             throw new DepositeException();
         }
@@ -76,15 +70,9 @@ public class DepManager implements DepositManager {
             throw new DepositeException();
         }
         List<Deposit> deposits = new ArrayList<Deposit>();
-        String clientPassport = client.getPassport();
-        try (ICsvBeanReader reader = new CsvBeanReader(new FileReader(file), CsvPreference.STANDARD_PREFERENCE)) {
-            ReadDepositeRow row;
-            while ((row = reader.read(ReadDepositeRow.class, headerDeposit)) != null) {
-                if (row.getPassport().equals(clientPassport)) {
-                    deposits.add(CreareRowDeposit(row));
-                }
-            }
-        } catch (IOException | CSVException e) {
+        try {
+            dBworker.getClientDepositsDAO(client);
+        } catch (SQLException e) {
             throw new DepositeException();
         }
         return deposits;
@@ -96,12 +84,9 @@ public class DepManager implements DepositManager {
     @Override
     public List<Deposit> getAllDeposits() throws DepositeException {
         List<Deposit> deposits = new ArrayList<Deposit>();
-        try (ICsvBeanReader reader = new CsvBeanReader(new FileReader(file), CsvPreference.STANDARD_PREFERENCE)) {
-            ReadDepositeRow row;
-            while ((row = reader.read(ReadDepositeRow.class, headerDeposit)) != null) {
-                deposits.add(CreareRowDeposit(row));
-            }
-        } catch (IOException | CSVException e) {
+        try {
+           dBworker.getAllDepDAO();
+        } catch (SQLException e) {
             throw new DepositeException();
         }
         return deposits;
@@ -135,14 +120,17 @@ public class DepManager implements DepositManager {
      * из процента при досрочном изъятии.
      */
     @Override
-    public double removeDeposit(Deposit deposit, Date closeDate, String token) throws DepositeException {
+    public double removeDeposit(Deposit deposit, Date closeDate, String token) throws DepositeException, SQLException {
         try {
             if (!TokenManager.getInstance().checkToken(token)) throw new DepositeException();
         } catch (NoTokenExeption e) {
             System.out.println("Операция сейчас не доступна. Выполните повторную авторизацию");
             throw new DepositeException();
         }
-        File tempFile = new File("temp.csv");
+
+
+        dBworker.removeDepositDAO(deposit);
+        /*File tempFile = new File("temp.csv");
         List<Deposit> newAllDep = getAllDeposits();
         boolean flag = newAllDep.remove(deposit);
         if (!flag) throw new DepositeException("Депозит отсутствует");
@@ -156,6 +144,9 @@ public class DepManager implements DepositManager {
         }
         file.delete();
         tempFile.renameTo(file);
+*/
+
+
         if (DaysGone(deposit.getStartDate(), closeDate) < deposit.getTermDays()) {
             System.out.println("Срок не вышел, прошло " + DaysGone(deposit.getStartDate(), closeDate) + " дней, а срок " + deposit.getTermDays());
             if (deposit.isWithPercentCapitalization()) {

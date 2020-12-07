@@ -117,4 +117,17 @@ public class Deposit {
                 Integer.parseInt(this.getClient().getPassport().substring(3, 6)) * 9 +
                 (int) this.getStartDate().getTime() * 13;
     }
+
+    @Override
+    public String toString() {
+        return "Deposit{" +
+                "client=" + client +
+                ", ammount=" + ammount +
+                ", percent=" + percent +
+                ", pretermPercent=" + pretermPercent +
+                ", termDays=" + termDays +
+                ", startDate=" + startDate +
+                ", withPercentCapitalization=" + withPercentCapitalization +
+                '}';
+    }
 }

@@ -1,11 +1,13 @@
 package AccManager;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import DBworkee.DBworker;
 import ManageExeptions.EqualAccException;
 import org.supercsv.io.CsvBeanReader;
 import org.supercsv.io.ICsvBeanReader;
@@ -23,15 +25,7 @@ import ManageExeptions.AuthException;
 
 public class AccManager implements AccountManager {
 
-    /**
-     * Поле содержит в себе файл, в котором хранятся данные аккаунтов клиентов.
-     */
-    private File file = new File("C:\\Users\\naic infa\\Desktop\\prog\\Java\\BankWebApp\\Accounts.csv");
-
-    /**
-     * Поле содержит в себе заголовки, по которым записаны поля в файле CSV.
-     */
-    private String[] AccountHeader = new String[]{"userName", "password"};
+    DBworker dBworker = new DBworker();
 
     /**
      * Метод добавляет нового пользователя системы.
@@ -39,13 +33,12 @@ public class AccManager implements AccountManager {
      * Если пользователь с таким набором данных уже есть в системе, выбрасывается исключение EqualAccException.
      */
     @Override
-    public void addAccount(String userName, String password) throws AccException, EqualAccException {
+    public void addAccount(String userName, String password) throws AccException, EqualAccException, SQLException {
         if (userName == null || password == null) throw new AccException();
-        if (getAllAccounts().contains(userName + "," + password)) throw new EqualAccException();
-        Account newAcc = new Account(userName, password);
+        if (dBworker.findAccount(userName, password)) throw new EqualAccException();
         try {
-            CSVWorker.PrintInCVS(file, newAcc, AccountHeader);
-        } catch (CSVException e) {
+            dBworker.addAccountsDAO(userName, password);
+        } catch (SQLException e) {
             throw new AccException("Ошибка добавления в систему");
         }
     }
@@ -57,29 +50,8 @@ public class AccManager implements AccountManager {
      * после чего старый файл с пользователями удаляется, а новый приобретает его имя.
      */
     @Override
-    public void removeAccount(String userName, String password) throws AccException {
-        boolean flag = false;
-        File tempFile = new File("temp.csv");
-        List<String> newAllAcc = getAllAccounts();
-        Iterator<String> accIterator = newAllAcc.iterator();
-        while (accIterator.hasNext()) {
-            String nextAcc = accIterator.next();
-            if (nextAcc.equals(userName + "," + password)) {
-                accIterator.remove();
-                flag = true;
-            }
-        }
-        if (!flag) throw new AccException("Ошибка удаления");  //Если удаление не произошло, генерируется исключение
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))) {
-            for (String acc : newAllAcc) {
-                bw.write(acc);
-                bw.write("\n");
-            }
-        } catch (IOException e) {
-            throw new AccException("Ошибка удаления");
-        }
-        file.delete();
-        tempFile.renameTo(file);
+    public void removeAccount(String userName, String password) throws AccException, SQLException {
+        dBworker.removeAccountDAO(userName,password);
     }
 
     /**
@@ -88,14 +60,11 @@ public class AccManager implements AccountManager {
     @Override
     public List<String> getAllAccounts() throws AccException {
         List<String> Accounts = new ArrayList<String>();
-        try (ICsvBeanReader reader = new CsvBeanReader(new FileReader(file), CsvPreference.STANDARD_PREFERENCE)) {
-            ReadAccountRow row;
-            while ((row = reader.read(ReadAccountRow.class, AccountHeader)) != null) {
-                Accounts.add(row.getUserName() + "," + row.getPassword());
-            }
-        } catch (IOException e) {
+        try {
+            dBworker.getAllAccDAO();
+            } catch (SQLException e) {
             throw new AccException("Ошибка доступа к системе");
-        }
+              }
         return Accounts;
     }
 
@@ -106,14 +75,11 @@ public class AccManager implements AccountManager {
      */
     @Override
     public String authorize(String userName, String password, Date currentTime) throws AuthException, AccException {
-        try (BufferedReader bw = new BufferedReader(new FileReader(file))) {
-            String AccountRow;
-            while ((AccountRow = bw.readLine()) != null) {
-                if (AccountRow.equals(userName + "," + password)) {
-                    return TokenManager.getInstance().setToken(currentTime);
-                }
+        try {
+            if (dBworker.findAccount(userName, password)) {
+                return TokenManager.getInstance().setToken(currentTime);
             }
-        } catch (IOException e) {
+        } catch (SQLException e) {
             throw new AccException("Ошибка доступа к системе");
         }
         throw new AuthException("Неверный логин/пароль");

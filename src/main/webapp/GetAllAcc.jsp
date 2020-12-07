@@ -16,7 +16,7 @@
 <%@ page import="java.util.List" %>
 
 <%AccManager accManager = new AccManager();
-
+    Class.forName("org.postgresql.Driver");
         List<String> accs= accManager.getAllAccounts();
         response.getWriter().println("Имеющиеся аккаунты:");
         for (String acc:accs) response.getWriter().println(acc);

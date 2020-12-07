@@ -15,9 +15,11 @@
     <%@page import="AccManager.AccManager" %>
     <%@ page import="ManageExeptions.EqualAccException" %>
     <%@ page import="ManageExeptions.AccException" %>
+    <%@ page import="java.sql.SQLException" %>
     <%AccManager accManager = new AccManager();
     String username = request.getParameter("username");
     String password = request.getParameter("password");
+    Class.forName("org.postgresql.Driver");
     try {
       accManager.addAccount(username, password);
       response.getWriter().println("Аккаунт зарегестрирован");
@@ -25,6 +27,7 @@
         response.getWriter().println("Такой аккаунт уже есть");}
       catch (AccException e) {
           response.getWriter().println("Поля username/passwort пустые");}
+
     %>
 </body>
 </html>

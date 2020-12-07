@@ -15,6 +15,7 @@
 <%@ page import="ManageExeptions.EqualAccException" %>
 <%@ page import="ManageExeptions.AccException" %>
 <%AccManager accManager = new AccManager();
+    Class.forName("org.postgresql.Driver");
     String username = request.getParameter("username");
     String password = request.getParameter("password");
     try {

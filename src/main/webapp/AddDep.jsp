@@ -16,6 +16,7 @@
 <%@ page import="java.util.Date" %>
 <%@ page import="ManageExeptions.DepositeException" %>
 <%DepManager depManager = new DepManager();
+    Class.forName("org.postgresql.Driver");
     String token = null;
     Client client = new Client("Ivan", "Andreev", "1234566662");
     Cookie[] cookies = request.getCookies();

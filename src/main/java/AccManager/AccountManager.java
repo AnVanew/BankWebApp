@@ -4,6 +4,7 @@ import ManageExeptions.AccException;
 import ManageExeptions.AuthException;
 import ManageExeptions.EqualAccException;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -12,12 +13,12 @@ public interface AccountManager {
     /*
       Метод добавляет нового пользователя системы
      */
-    void addAccount(String userName, String password) throws AccException, EqualAccException;
+    void addAccount(String userName, String password) throws AccException, EqualAccException, SQLException;
 
     /*
       Метод удаляет пользователя системы
      */
-    void removeAccount(String userName, String password) throws AccException;
+    void removeAccount(String userName, String password) throws AccException, SQLException;
 
     /*
       Метод возвращает список всех аккаунтов

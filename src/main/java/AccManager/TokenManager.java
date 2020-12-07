@@ -40,7 +40,7 @@ public class TokenManager {
     /**
      * Метод возвращает токен, размещенный им в хранилище.
      */
-    String setToken(Date currentTime) {
+    public String setToken(Date currentTime) {
         String token = GenerateToken();
         tokenStorage.put(token, currentTime);
         return token;
@@ -53,6 +53,7 @@ public class TokenManager {
      * Если время сессии истекло, то токен удаляется из tokenStorage.
      */
     public boolean checkToken(String token) throws NoTokenExeption {
+        if (token==null)return  false;
         Date currentDate = new Date();
         Date sessionDate = tokenStorage.get(token);
         if (sessionDate == null) throw new NoTokenExeption();

@@ -3,6 +3,7 @@ package DepManager;
 import DataOfBank.*;
 import ManageExeptions.DepositeException;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public interface DepositManager {
     /*
       Метод удаляет запись о вкладе и возвращает сумму к выплате в кассе. Если вклад закрывается досрочно, то сумма к выплате рассчитывается исходя из процента при досрочном изъятии.
      */
-    double removeDeposit(Deposit deposit, Date closeDate, String token) throws DepositeException;
+    double removeDeposit(Deposit deposit, Date closeDate, String token) throws DepositeException, SQLException;
 
 
 }
